@@ -28,6 +28,13 @@ bin/profiles
 bin/preview
 _deps/*
 
+# temp - zk
+build-fast
+bin/usc-game*
+
+# Temporary private Backbeat SDK packages; replace this with hosted downloads.
+third_party/backbeat/*.zip
+
 # Intermediate Files
 x64
 Win32
@@ -67,4 +74,3 @@ Makefile
 # Document build files
 docs/build
 docs/source/_build
-
