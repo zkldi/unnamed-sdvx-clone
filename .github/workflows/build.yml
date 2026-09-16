@@ -10,22 +10,6 @@ jobs:
               uses: actions/checkout@v1
             - name: Checkout submodules
               run: git submodule update --init --recursive
-            - name: Download Backbeat SDK
-              shell: pwsh
-              run: |
-                $name = "backbeat-c-sdk-x86_64-pc-windows-msvc.zip"
-                $expectedSha256 = "df49c4e560c9c79face4d6bb426808d6567cdb8d9e4a7fe039af22ce337256f6"
-                $download = Join-Path $env:RUNNER_TEMP "backbeat-release-$name"
-                Invoke-WebRequest `
-                  "https://github.com/zkldi/backbeat/releases/download/v0.5.0/$name" `
-                  -OutFile $download
-                $actualSha256 = (Get-FileHash $download -Algorithm SHA256).Hash.ToLowerInvariant()
-                if ($actualSha256 -ne $expectedSha256) {
-                  throw "Backbeat SDK SHA-256 mismatch: expected $expectedSha256, got $actualSha256"
-                }
-                $extractDir = Join-Path $env:RUNNER_TEMP "backbeat-release"
-                Expand-Archive -Path $download -DestinationPath $extractDir -Force
-                Copy-Item (Join-Path $extractDir $name) "third_party/backbeat/$name" -Force
             - name: Cache vcpkg
               uses: actions/cache@v4
               with:
@@ -72,17 +56,6 @@ jobs:
               uses: actions/checkout@v1
             - name: Checkout submodules
               run: git submodule update --init --recursive
-            - name: Download Backbeat SDK
-              run: |
-                name=backbeat-c-sdk-x86_64-unknown-linux-gnu.zip
-                expected_sha256=6cd03691f9e379f5efc6320a36a7a18afafedd149f94c211dccdb34b33654c10
-                download="${RUNNER_TEMP}/backbeat-release-${name}"
-                curl --fail --location --retry 3 \
-                  "https://github.com/zkldi/backbeat/releases/download/v0.5.0/$name" \
-                  -o "$download"
-                echo "$expected_sha256  $download" | sha256sum --check --status -
-                unzip -p "$download" "$name" > "third_party/backbeat/$name"
-                test -s "third_party/backbeat/$name"
             - name: Install packages
               run: |
                 sudo apt-get update
@@ -120,29 +93,6 @@ jobs:
               uses: actions/checkout@v1
             - name: Checkout submodules
               run: git submodule update --init --recursive
-            - name: Download Backbeat SDK
-              run: |
-                case "$(uname -m)" in
-                  arm64)
-                    name=backbeat-c-sdk-aarch64-apple-darwin.zip
-                    expected_sha256=8c3d18f5c68df9872a66908c0a955da8d2a436c39d0722808e570a0f6d4c0227
-                    ;;
-                  x86_64)
-                    name=backbeat-c-sdk-x86_64-apple-darwin.zip
-                    expected_sha256=d6a10432077f277a2b5148ee801e118c144ff72d67f661af97ffdf2ed6279e97
-                    ;;
-                  *)
-                    echo "Unsupported macOS architecture: $(uname -m)"
-                    exit 1
-                    ;;
-                esac
-                download="${RUNNER_TEMP}/backbeat-release-${name}"
-                curl --fail --location --retry 3 \
-                  "https://github.com/zkldi/backbeat/releases/download/v0.5.0/$name" \
-                  -o "$download"
-                echo "$expected_sha256  $download" | shasum -a 256 -c -
-                unzip -p "$download" "$name" > "third_party/backbeat/$name"
-                test -s "third_party/backbeat/$name"
             - name: brew update
               run: brew update
             - name: Install packages
